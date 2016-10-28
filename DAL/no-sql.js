@@ -4,21 +4,20 @@ const PouchDB = require('pouchdb-http');
 PouchDB.plugin(require('pouchdb-mapreduce'));
 const fetchConfig = require('zero-config');
 
-var config = fetchConfig(path.join(__dirname, '..'), {
-    dcValue: 'test'
-});
+var config = fetchConfig(path.join(__dirname, '..'), {dcValue: 'test'});
 const urlFormat = require('url').format;
 const db = new PouchDB(urlFormat(config.get("couch")));
 
+//these properties rep functions except for helper functions
 var dal = {
     getPerson: getPerson,
-    listPersons: listPersons,
     updatePerson: updatePerson,
     createPerson: createPerson,
     deletePerson: deletePerson,
+    listPersons: listPersons,
     createView: createView,
-    getReliefEffort: getReliefEffort,
     listReliefEfforts: listReliefEfforts,
+    getReliefEffort: getReliefEffort,
     updateReliefEffort: updateReliefEffort,
     createReliefEffort: createReliefEffort,
     deleteReliefEffort: deleteReliefEffort
@@ -32,26 +31,49 @@ var convertPersons = function(queryRow) {
     return queryRow.doc;
 };
 
-// function queryDB(sortBy, startKey, limit, callback) {
-//     if (typeof startKey == "undefined" || startKey === null) {
+function listDocs(sortBy, startkey, limit, callback) {
+  if (typeof sortBy == "undefined" || sortBy === null) {
+        return callback(new Error("Missing search parameter"), null)
+      }
+      limit = startkey !== '' ? limit += 1 : limit
+
+      console.log('sortBy:', sortBy)
+      console.log('startkey:', startkey)
+      console.log('limit:', limit)
+
+      db.query(sortBy, {
+          startkey: startkey,
+          limit: limit,
+          include_docs: true
+      }, function(err, data) {
+        if (err) return callback(err)
+        if (startkey !== '') {
+          data.rows.shift()
+        }
+        if (data) return callback(null, data)
+      })
+  }
+
+// function queryDB(sortBy, startkey, limit, callback) {
+//     if (typeof startkey == "undefined" || startkey === null) {
 //         return callback(new Error('Missing search parameter'));
 //     } else if (typeof limit == "undefined" || limit === null || limit === 0) {
 //         return callback(new Error('Missing limit parameter'));
 //
 //     } else {
-//         limit = startKey === '' ? Number(limit) : Number(limit) + 1;
+//         limit = startkey === '' ? Number(limit) : Number(limit) + 1;
 //
-//         console.log("sortBy:", sortBy, " startKey: ", startKey, " limit: ", limit)
+//         console.log("sortBy:", sortBy, " startkey: ", startkey, " limit: ", limit)
 //
 //         //////     PROMISES
 //         db.query(sortBy, {
-//             startkey: startKey,
+//             startkey: startkey,
 //             limit: limit,
 //             include_docs: true
 //         }).then(function(result) {
 //             // Do we need to skip (remove/shift) the first item
 //             //  out of the array
-//             if (startKey !== '' && result.rows.length > 0) {
+//             if (startkey !== '' && result.rows.length > 0) {
 //                 // remove first item
 //                 result.rows.shift();
 //             }
@@ -62,7 +84,7 @@ var convertPersons = function(queryRow) {
 //
 //         //////     CALLBACKS
 //         // db.query(sortBy, {
-//         //     startkey: startKey,
+//         //     startkey: startkey,
 //         //     limit: limit,
 //         //     include_docs: true
 //         // }, function(err, result) {
@@ -70,7 +92,7 @@ var convertPersons = function(queryRow) {
 //         //     if (result) {
 //         //         // Do we need to skip (remove/shift) the first item
 //         //         //  out of the array
-//         //         if (startKey !== '' && result.rows.length > 0) {
+//         //         if (startkey !== '' && result.rows.length > 0) {
 //         //             // remove first item
 //         //             result.rows.shift();
 //         //         }
@@ -95,9 +117,12 @@ function getDocByID(id, callback) {
 
         //////     CALLBACKS
         db.get(id, function(err, data) {
-            if (err) return callback(err);
-            if (data) return callback(null, data);
-        });
+            if (err)
+                return callback(err);
+            if (data)
+                return callback(null, data);
+            }
+        );
     }
 }
 
@@ -131,16 +156,16 @@ function updateDoc(data, callback) {
         return callback(new Error('400Missing rev property from data'));
     } else {
 
-       //////     PROMISES
-       // attempt to db.get() doc out of db,
-       // if it's not there, it can't be updated.
-    //    db.get(data._id).then(function(doc) {
-    //      return db.put(data);
-    //    }).then(function(response) {
-    //        return callback(null, response)
-    //    }).catch(function(err) {
-    //        return callback(err)
-    //    });
+        //////     PROMISES
+        // attempt to db.get() doc out of db,
+        // if it's not there, it can't be updated.
+        //    db.get(data._id).then(function(doc) {
+        //      return db.put(data);
+        //    }).then(function(response) {
+        //        return callback(null, response)
+        //    }).catch(function(err) {
+        //        return callback(err)
+        //    });
 
         // db.put(data).then(function(response) {
         //     return callback(null, response);
@@ -150,9 +175,12 @@ function updateDoc(data, callback) {
 
         //////     CALLBACKS
         db.put(data, function(err, response) {
-            if (err) return callback(err);
-            if (response) return callback(null, response);
-        });
+            if (err)
+                return callback(err);
+            if (response)
+                return callback(null, response);
+            }
+        );
     }
 }
 
@@ -173,16 +201,15 @@ function deleteDoc(data, callback) {
 
         //////     CALLBACKS
         db.remove(data, function(err, response) {
-            if (err) return callback(err);
-            if (response) return callback(null, response);
-        });
+            if (err)
+                return callback(err);
+            if (response)
+                return callback(null, response);
+            }
+        );
     }
 
 }
-
-
-
-
 
 ///////////////////////////////////////////////////////////////////////////
 //                              PERSONS
@@ -191,8 +218,8 @@ function getPerson(id, callback) {
     getDocByID(id, callback);
 }
 
-// function listPersons(sortBy, startKey, limit, callback) {
-//     queryDB(sortBy, startKey, limit, callback);
+// function listPersons(sortBy, startkey, limit, callback) {
+//     queryDB(sortBy, startkey, limit, callback);
 // }
 
 function updatePerson(data, callback) {
@@ -232,16 +259,69 @@ function createPerson(data, callback) {
 
         //////     CALLBACKS
         db.put(data, function(err, response) {
-            if (err) return callback(err);
-            if (response) return callback(null, response);
-        });
+            if (err)
+                return callback(err);
+            if (response)
+                return callback(null, response);
+            }
+        );
     }
 }
 
+// function listReliefEfforts(sortBy, startkey, limit, callback) {
+//   if (typeof sortBy == "undefined" || sortBy === null) {
+//     return callback(new Error("Missing search parameter"), null)
+//   }
+//   limit = startkey !== '' ? limit += 1 : limit
+//
+//   console.log('sortBy:', sortBy)
+//   console.log('startkey:', startkey)
+//   console.log('limit:', limit)
+//
+//   db.query('lastNameView', {
+//       startkey: startkey,
+//       limit: limit,
+//       include_docs: true
+//   }, function(err, data) {
+//     if (err) return callback(err)
+//     if (startkey !== '') {
+//       data.rows.shift()
+//     }
+//     if (data) return callback(null, data)
+//   })
+// }
 
+function listPersons(sortBy, startkey, limit, callback) {
+  listDocs(sortBy, startkey, limit, callback)
+}
 
-
-
+function listReliefEfforts(sortBy, startkey, limit, callback) {
+  listDocs(sortBy, startkey, limit, callback)
+}
+//
+// function listPersons(sortBy, startkey, limit, callback) {
+//     ///////// validate our params
+//     if (typeof sortBy == "undefined" || sortBy === null) {
+//       return callback(new Error("Missing search parameter"), null)
+//     }
+//     limit = startkey !== '' ? limit += 1 : limit
+//
+//     console.log('sortBy:', sortBy)
+//     console.log('startkey:', startkey)
+//     console.log('limit:', limit)
+//
+//     db.query('lastNameView', {
+//         startkey: startkey,
+//         limit: limit,
+//         include_docs: true
+//     }, function(err, data) {
+//       if (err) return callback(err)
+//       if (startkey !== '') {
+//         data.rows.shift()
+//       }
+//       if (data) return callback(null, data)
+//     })
+// }
 
 //////////////////////////////////////////////////////////////////////
 //                       RELIEF EFFORTS
@@ -249,10 +329,6 @@ function createPerson(data, callback) {
 function getReliefEffort(id, callback) {
     getDocByID(id, callback);
 }
-
-// function listReliefEfforts(sortBy, startKey, limit, callback) {
-//     queryDB(sortBy, startKey, limit, callback);
-// }
 
 function updateReliefEffort(data, callback) {
     updateDoc(data, callback);
