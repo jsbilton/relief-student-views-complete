@@ -226,19 +226,23 @@ app.delete('/reliefefforts/:id', function(req, res, next) {
 ////////////////////// ////////////////////// //////////////////////
 app.put('/persons/:id', function(req, res, next) {
     const personId = req.params.id
-    if(personId === req.body._id) {
-    return new HTTPError(404, 'callback error', {
-            message: err.message,
-            method: req.method,
-            path: req.path
-        })}
+    if(personId !== req.body._id) {
+      var myErrMsg = new HTTPError(404, 'callback error', {
+              message: "ROUTE ID DOES NOT MATCH BODY ID",
+              method: req.method,
+              path: req.path
+          })
+      return next(myErrMsg)
+    }
     dal.getPerson(personId, function callback(err, data) {
         if (err) {
             var responseError = BuildResponseError(err)
             return next(new HTTPError(responseError.status, responseError.message, responseError))
         }
-        if (body) {
-            dal.updatePerson(req.body, function callback(updatedErr, updatedPerson) {
+        if (data) {
+            var reqBody = req.body
+            reqBody._rev = data._rev // get most recent rev for this person doc
+            dal.updatePerson(reqBody, function callback(updatedErr, updatedPerson) {
                 if (updatedErr) {
                     var responseError = BuildResponseError(updatedErr)
                     return next(new HTTPError(responseError.status, responseError.message, responseError))
@@ -246,7 +250,9 @@ app.put('/persons/:id', function(req, res, next) {
                 if (updatedPerson) {
                     console.log("UPDATE", updatedPerson)
                     res.append('Content-type', 'application/json')
-                    res.status(200).send(updatedPerson)
+                    res.status(200)
+                    res.write(updatedPerson)
+                    res.end()
                 }
             })
         }
@@ -261,18 +267,20 @@ app.put('/reliefefforts/:id', function(req, res, next) {
     const reliefId = req.params.id
     if(reliefId === req.body._id) {
     return new HTTPError(404, 'callback error', {
-            message: err.message,
+            message: "ROUTE ID DOES NOT MATCH BODY ID",
             method: req.method,
             path: req.path
         })}
 
-    dal.getReliefEffort(reliefId, function callback(err, body) {
+    dal.getReliefEffort(reliefId, function callback(err, data) {
         if (err) {
             var responseError = BuildResponseError(err)
             return next(new HTTPError(responseError.status, responseError.message, responseError))
         }
-        if (body) {
-            dal.updateReliefEffort(req.body, function callback(updatedEffortErr, updatedEffort) {
+        if (data) {
+          var reqBody = req.body
+          reqBody._rev = data._rev
+            dal.updateReliefEffort(reqBody, function callback(updatedEffortErr, updatedEffort) {
                 if (updatedEffortErr) {
                     var responseError = BuildResponseError(updatedEffortErr)
                     return next(new HTTPError(responseError.status, responseError.message, responseError))
@@ -292,42 +300,44 @@ app.put('/reliefefforts/:id', function(req, res, next) {
 ///////////////////    List Persons      ////// ////////////////////
 ////////////////////// ////////////////////// //////////////////////
 
-// app.get('/persons', function(req, res) {
-//     const sortByParam = req.query.sortby || 'email'
-//     const sortBy = sortByParam
-//     const sortToken = req.query.sorttoken || ''
-//     const limit = req.query.limit || 5
-//
-//     dal.listPersons(sortBy, sortToken, limit, function callback(err, data) {
-//         if (err) {
-//             return console.log(err.message)
-//         }
-//         if (data) {
-//             res.send(data)
-//         }
-//     })
-// })
+app.get('/persons', function(req, res, next) {
+    const sortByParam = req.query.sortby || 'lastNameView'
+    const sortBy = sortByParam
+    const sortToken = req.query.sorttoken || ''
+    const limit = req.query.limit || 5
+
+    dal.listPersons(sortBy, sortToken, limit, function callback(err, data) {
+        if (err) {
+            var responseError= BuildResponseError(err)
+            return next(new HTTPError(responseError.status, responseError.message, responseError))
+        }
+        if (data) {
+            res.send(data)
+        }
+    })
+})
 
 
 ////////////////////// ////////////////////// //////////////////////
 ///////////////////    List Relief Efforts   // ////////////////////
 ////////////////////// ////////////////////// //////////////////////
 
-// app.get('/reliefefforts', function(req, res) {
-//     const sortByParam = req.query.sortby || 'reliefefforts'
-//     const sortBy = sortByParam
-//     const sortToken = req.query.sorttoken || ''
-//     const limit = req.query.limit || 5
-//
-//     dal.listReliefEfforts(sortBy, sortToken, limit, function callback(err, data) {
-//         if (err) {
-//             return console.log(err.message)
-//         }
-//         if (data) {
-//             res.send(data)
-//         }
-//     })
-// })
+app.get('/reliefEfforts', function(req, res) {
+    const sortByParam = req.query.sortby || 'reliefEfforts'
+    const sortBy = sortByParam
+    const sortToken = req.query.sorttoken || ''
+    const limit = req.query.limit || 5
+
+    dal.listReliefEfforts(sortBy, sortToken, limit, function callback(err, data) {
+        if (err) {
+            var responseError = BuildResponseError(err)
+            return next(new HTTPError(responseError.status, responseError.message, responseError))
+        }
+        if (data) {
+            res.send(data)
+        }
+    })
+})
 
 
 
