@@ -32,27 +32,31 @@ var convertPersons = function(queryRow) {
 };
 
 function listDocs(sortBy, startkey, limit, callback) {
-  if (typeof sortBy == "undefined" || sortBy === null) {
+    if (typeof sortBy == "undefined" || sortBy === null) {
         return callback(new Error("Missing search parameter"), null)
-      }
-      limit = startkey !== '' ? limit += 1 : limit
+    }
+    limit = startkey !== ''
+        ? limit += 1
+        : limit
 
-      console.log('sortBy:', sortBy)
-      console.log('startkey:', startkey)
-      console.log('limit:', limit)
+    console.log('sortBy:', sortBy)
+    console.log('startkey:', startkey)
+    console.log('limit:', limit)
 
-      db.query(sortBy, {
-          startkey: startkey,
-          limit: limit,
-          include_docs: true
-      }, function(err, data) {
-        if (err) return callback(err)
+    db.query(sortBy, {
+        startkey: startkey,
+        limit: limit,
+        include_docs: true
+    }, function(err, data) {
+        if (err)
+            return callback(err)
         if (startkey !== '') {
-          data.rows.shift()
+            data.rows.shift()
         }
-        if (data) return callback(null, data)
-      })
-  }
+        if (data)
+            return callback(null, data)
+    })
+}
 
 // function queryDB(sortBy, startkey, limit, callback) {
 //     if (typeof startkey == "undefined" || startkey === null) {
@@ -292,11 +296,11 @@ function createPerson(data, callback) {
 // }
 
 function listPersons(sortBy, startkey, limit, callback) {
-  listDocs(sortBy, startkey, limit, callback)
+    listDocs(sortBy, startkey, limit, callback)
 }
 
 function listReliefEfforts(sortBy, startkey, limit, callback) {
-  listDocs(sortBy, startkey, limit, callback)
+    listDocs(sortBy, startkey, limit, callback)
 }
 //
 // function listPersons(sortBy, startkey, limit, callback) {

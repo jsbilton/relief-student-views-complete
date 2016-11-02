@@ -287,6 +287,50 @@ app.put('/reliefefforts/:id', function(req, res, next) {
     })
 })
 
+
+////////////////////// ////////////////////// //////////////////////
+///////////////////    List Persons      ////// ////////////////////
+////////////////////// ////////////////////// //////////////////////
+
+// app.get('/persons', function(req, res) {
+//     const sortByParam = req.query.sortby || 'email'
+//     const sortBy = sortByParam
+//     const sortToken = req.query.sorttoken || ''
+//     const limit = req.query.limit || 5
+//
+//     dal.listPersons(sortBy, sortToken, limit, function callback(err, data) {
+//         if (err) {
+//             return console.log(err.message)
+//         }
+//         if (data) {
+//             res.send(data)
+//         }
+//     })
+// })
+
+
+////////////////////// ////////////////////// //////////////////////
+///////////////////    List Relief Efforts   // ////////////////////
+////////////////////// ////////////////////// //////////////////////
+
+// app.get('/reliefefforts', function(req, res) {
+//     const sortByParam = req.query.sortby || 'reliefefforts'
+//     const sortBy = sortByParam
+//     const sortToken = req.query.sorttoken || ''
+//     const limit = req.query.limit || 5
+//
+//     dal.listReliefEfforts(sortBy, sortToken, limit, function callback(err, data) {
+//         if (err) {
+//             return console.log(err.message)
+//         }
+//         if (data) {
+//             res.send(data)
+//         }
+//     })
+// })
+
+
+
 ////////////////////// ////////////////////// //////////////////////
 ///////////     error handler, load middleware     /////////////////
 ////////////////////// ////////////////////// //////////////////////
