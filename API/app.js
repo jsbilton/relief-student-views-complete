@@ -6,7 +6,8 @@ const HTTP = require('http')
 const port = process.env.PORT || 8080 //injecting the env var
 var app = express()
 const HTTPError = require('node-http-error')
-const dal = require('../DAL/no-sql.js')
+// const dal = require('../DAL/no-sql.js')
+const dal = require('../DAL/my-sql.js')
 const bodyParser = require('body-parser')
 
 /////////////       BODY PARSER     ////////////////////////////
@@ -224,9 +225,17 @@ app.delete('/reliefefforts/:id', function(req, res, next) {
 ////////////////////// ////////////////////// //////////////////////
 ///////////////////    update a person          ////////////////////
 ////////////////////// ////////////////////// //////////////////////
+
 app.put('/persons/:id', function(req, res, next) {
     const personId = req.params.id
-    if(personId !== req.body._id) {
+
+    // console.log("personID: ", personId)
+    // console.log("req.body_id", req.body._id)
+    // console.log("these two are: ", parseInt(personId) !== parseInt(req.body._id))
+
+
+    if (parseInt(personId) !== parseInt(req.body._id)) {
+      console.log("YOU ARE INSIDE")
       var myErrMsg = new HTTPError(404, 'callback error', {
               message: "ROUTE ID DOES NOT MATCH BODY ID",
               method: req.method,
@@ -235,13 +244,18 @@ app.put('/persons/:id', function(req, res, next) {
       return next(myErrMsg)
     }
     dal.getPerson(personId, function callback(err, data) {
+      console.log("back from dal getPerson", personId)
         if (err) {
+          console.log("err stuff", err);
             var responseError = BuildResponseError(err)
             return next(new HTTPError(responseError.status, responseError.message, responseError))
         }
         if (data) {
+              console.log("data stuff", data)
             var reqBody = req.body
+              console.log("req body stuff", reqBody)
             reqBody._rev = data._rev // get most recent rev for this person doc
+              console.log("reqBody data rev", reqBody._rev)
             dal.updatePerson(reqBody, function callback(updatedErr, updatedPerson) {
                 if (updatedErr) {
                     var responseError = BuildResponseError(updatedErr)
@@ -301,11 +315,12 @@ app.put('/reliefefforts/:id', function(req, res, next) {
 ////////////////////// ////////////////////// //////////////////////
 
 app.get('/persons', function(req, res, next) {
-    const sortByParam = req.query.sortby || 'lastNameView'
+    const sortByParam = req.query.sortby || 'vPerson'   //  for no-sql ...'lastNameView' for my-sql ... 'vPerson'
     const sortBy = sortByParam
     const sortToken = req.query.sorttoken || ''
     const limit = req.query.limit || 5
 
+// added sortByParam as a parameter then i removed it
     dal.listPersons(sortBy, sortToken, limit, function callback(err, data) {
         if (err) {
             var responseError= BuildResponseError(err)
@@ -316,7 +331,6 @@ app.get('/persons', function(req, res, next) {
         }
     })
 })
-
 
 ////////////////////// ////////////////////// //////////////////////
 ///////////////////    List Relief Efforts   // ////////////////////

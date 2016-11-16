@@ -1,14 +1,15 @@
 /*jshint esversion: 6 */
-const path = require('path');
-const PouchDB = require('pouchdb-http');
-PouchDB.plugin(require('pouchdb-mapreduce'));
-const fetchConfig = require('zero-config');
+const path = require('path')
+const PouchDB = require('pouchdb-http')
+PouchDB.plugin(require('pouchdb-mapreduce'))
+const fetchConfig = require('zero-config')
 
-var config = fetchConfig(path.join(__dirname, '..'), {dcValue: 'test'});
-const urlFormat = require('url').format;
-const db = new PouchDB(urlFormat(config.get("couch")));
+var config = fetchConfig(path.join(__dirname, '..'), {dcValue: 'test'})
+const urlFormat = require('url').format
+const db = new PouchDB(urlFormat(config.get("couch")))
 
 //these properties rep functions except for helper functions
+//object keys that we will export
 var dal = {
     getPerson: getPerson,
     updatePerson: updatePerson,
@@ -21,7 +22,7 @@ var dal = {
     updateReliefEffort: updateReliefEffort,
     createReliefEffort: createReliefEffort,
     deleteReliefEffort: deleteReliefEffort
-};
+}
 
 /////////////////////////
 //  UTILITY FUNCTIONS
@@ -29,7 +30,7 @@ var dal = {
 var convertPersons = function(queryRow) {
     queryRow.doc.sortToken = queryRow.key;
     return queryRow.doc;
-};
+}
 
 function listDocs(sortBy, startkey, limit, callback) {
     if (typeof sortBy == "undefined" || sortBy === null) {
@@ -192,9 +193,9 @@ function deleteDoc(data, callback) {
     if (typeof data == "undefined" || data === null) {
         return callback(new Error('400Missing data for delete'));
     } else if (data.hasOwnProperty('_id') !== true) {
-        return callback(new Error('400Missing _id property from data'));
+        return callback(new Error('400Missing _id property from delete'));
     } else if (data.hasOwnProperty('_rev') !== true) {
-        return callback(new Error('400Missing _rev property from data'));
+        return callback(new Error('400Missing _rev property from delete'));
     } else {
         //////     PROMISES
         // db.remove(data).then(function(response) {
@@ -250,9 +251,10 @@ function createPerson(data, callback) {
         return callback(new Error('400Missing email property within data'));
     } else {
 
-        data.active = true;
-        data.type = 'person';
-        data._id = 'person_' + data.email;
+        /// sets properties if nothing wrong
+        data.active = true
+        data.type = 'person'
+        data._id = 'person_' + data.email
 
         //////     PROMISES
         // db.put(data).then(function(response) {
@@ -264,11 +266,11 @@ function createPerson(data, callback) {
         //////     CALLBACKS
         db.put(data, function(err, response) {
             if (err)
-                return callback(err);
+                return callback(err)
             if (response)
-                return callback(null, response);
+                return callback(null, response)
             }
-        );
+        )
     }
 }
 
@@ -302,7 +304,7 @@ function listPersons(sortBy, startkey, limit, callback) {
 function listReliefEfforts(sortBy, startkey, limit, callback) {
     listDocs(sortBy, startkey, limit, callback)
 }
-//
+
 // function listPersons(sortBy, startkey, limit, callback) {
 //     ///////// validate our params
 //     if (typeof sortBy == "undefined" || sortBy === null) {
@@ -331,42 +333,42 @@ function listReliefEfforts(sortBy, startkey, limit, callback) {
 //                       RELIEF EFFORTS
 //////////////////////////////////////////////////////////////////////
 function getReliefEffort(id, callback) {
-    getDocByID(id, callback);
+    getDocByID(id, callback)
 }
 
 function updateReliefEffort(data, callback) {
-    updateDoc(data, callback);
+    updateDoc(data, callback)
 }
 
 function deleteReliefEffort(data, callback) {
-    deleteDoc(data, callback);
+    deleteDoc(data, callback)
 }
 
 function createReliefEffort(data, callback) {
     // Call to couch retrieving a document with the given _id value.
     if (typeof data == "undefined" || data === null) {
-        return callback(new Error('400Missing data for create'));
+        return callback(new Error('400Missing data for create'))
     } else if (data.hasOwnProperty('_id') === true) {
         return callback(new Error('400Unnecessary _d property within data. ' +
-            'createPerson() will generate a unique _id'));
+            'createPerson() will generate a unique _id'))
     } else if (data.hasOwnProperty('_rev') === true) {
-        return callback(new Error('400Unnecessary rev property within data'));
+        return callback(new Error('400Unnecessary rev property within data'))
     } else if (data.hasOwnProperty('phase') !== true) {
-        return callback(new Error('400Missing phase property within data'));
+        return callback(new Error('400Missing phase property within data'))
     } else if (data.hasOwnProperty('name') !== true) {
-        return callback(new Error('400Missing name property within data'));
+        return callback(new Error('400Missing name property within data'))
     } else if (data.hasOwnProperty('organizationID') !== true) {
-        return callback(new Error('400Missing organizationID property within data'));
+        return callback(new Error('400Missing organizationID property within data'))
     } else {
-        data.active = true;
-        data.type = 'relief';
-        data._id = 'relief_' + data.organizationID.replace(/ /g, "_").replace(/\./g, "") + '_' + data.name.replace(/ /g, "_");
+        data.active = true
+        data.type = 'relief'
+        data._id = 'relief_' + data.organizationID.replace(/ /g, "_").replace(/\./g, "") + '_' + data.name.replace(/ /g, "_")
 
         //////     PROMISES
         db.put(data).then(function(response) {
-            return callback(null, response);
+            return callback(null, response)
         }).catch(function(err) {
-            return callback(err);
+            return callback(err)
         });
 
         //////     CALLBACKS
@@ -377,4 +379,4 @@ function createReliefEffort(data, callback) {
     }
 }
 
-module.exports = dal;
+module.exports = dal
