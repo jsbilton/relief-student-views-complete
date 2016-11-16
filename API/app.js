@@ -3,12 +3,20 @@
 ////////////////////// ////////////////////// //////////////////////
 const express = require('express')
 const HTTP = require('http')
-const port = process.env.PORT || 8080 //injecting the env var
+const port = process.env.PORT || 3000 //injecting the env var
 var app = express()
 const HTTPError = require('node-http-error')
 // const dal = require('../DAL/no-sql.js')
 const dal = require('../DAL/my-sql.js')
 const bodyParser = require('body-parser')
+var cors = require('express-cors')
+
+/////////////////     EXPRESS CORS    //////////////////////
+// app.use(cors({
+//     allowedOrigins: [
+//         'http://localhost:8080/persons'
+//     ]
+// }))
 
 /////////////       BODY PARSER     ////////////////////////////
 app.use(bodyParser.json())
